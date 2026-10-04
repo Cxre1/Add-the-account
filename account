@@ -1,77 +1,113 @@
 .container {
-        background-color: #ffffff;
-        padding: 25px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        width: 350px;
-    }
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 350px;
+}
 
-    h2, h3 {
-        text-align: center;
-        color: #333;
-    }
+h2, h3 {
+    text-align: center;
+    color: #333;
+}
 
-    label {
-        display: block;
-        margin-top: 12px;
-        margin-bottom: 5px;
-        font-weight: bold;
-        color: #555;
-    }
+label {
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
 
-    input {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        box-sizing: border-box;
-    }
+input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
 
-    .error {
-        color: red;
-        font-size: 14px;
-        margin-top: 8px;
-    }
+.error {
+    color: red;
+    font-size: 14px;
+    margin-top: 8px;
+}
 
-    button#addButton {
-        margin-top: 15px;
-        width: 100%;
-        padding: 10px;
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
+button#addButton {
+    margin-top: 15px;
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
 
-    button#addButton:hover {
-        background-color: #45a049;
-    }
+button#addButton:hover {
+    background-color: #45a049;
+}
 
-    .record {
-        background-color: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        padding: 10px;
-        margin-top: 10px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+button#cancelButton {
+    margin-top: 8px;
+    width: 100%;
+    padding: 10px;
+    background-color: #9e9e9e;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: none;
+}
 
-    .record button {
-        background-color: #e74c3c;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 5px;
-        cursor: pointer;
-    }
+button#cancelButton:hover {
+    background-color: #828282;
+}
 
-    .record button:hover {
-        background-color: #c0392b;
-    }
+.record {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.record-actions {
+    display: flex;
+}
+
+.record-actions button {
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+}
+
+.record-actions .delete-btn {
+    background-color: #e74c3c;
+    margin-left: 6px;
+}
+
+.record-actions .delete-btn:hover {
+    background-color: #c0392b;
+}
+
+.record-actions .edit-btn {
+    background-color: #f1c40f;
+    color: #333;
+}
+
+.record-actions .edit-btn:hover {
+    background-color: #d4ac0d;
+}
 </style>
+</head>
+<body>
+
 <div class="container">
     <h2>إضافة سجل جديد</h2>
 
@@ -95,8 +131,9 @@
 </div>
 
 <script>
-    document.getElementById("addButton").addEventListener("click", function () {
+    var editingRecordDiv = null;
 
+    document.getElementById("addButton").addEventListener("click", function () {
         var name = document.getElementById("name").value;
         var email = document.getElementById("email").value;
         var age = document.getElementById("age").value;
@@ -113,27 +150,84 @@
         }
 
         errorMessage.textContent = "";
+  if (editingRecordDiv !== null) {
+  var infoSpan = editingRecordDiv.querySelector("span");
+            infoSpan.textContent = name + " - " + email + " - " + age;
 
-        var recordDiv = document.createElement("div");
-        recordDiv.className = "record";
-
-        var infoText = document.createElement("span");
-        infoText.textContent = name + " - " + email + " - " + age;
-
-        var deleteButton = document.createElement("button");
-        deleteButton.textContent = "حذف";
-
-        deleteButton.addEventListener("click", function () {
-            recordDiv.remove();
-        });
-
-        recordDiv.appendChild(infoText);
-        recordDiv.appendChild(deleteButton);
-
-        document.getElementById("recordsList").appendChild(recordDiv);
-
-        document.getElementById("name").value = "";
+  exitEditMode();
+        } else {
+            createRecord(name, email, age);
+        }
+  document.getElementById("name").value = "";
         document.getElementById("email").value = "";
         document.getElementById("age").value = "";
     });
+document.getElementById("cancelButton").addEventListener("click", function () {
+        exitEditMode();
+        document.getElementById("name").value = "";
+        document.getElementById("email").value = "";
+        document.getElementById("age").value = "";
+        document.getElementById("errorMessage").textContent = "";
+    });
+ 
+    function createRecord(name, email, age) {
+        var recordDiv = document.createElement("div");
+        recordDiv.className = "record";
+ 
+        var infoText = document.createElement("span");
+        infoText.textContent = name + " - " + email + " - " + age;
+ 
+        var actionsDiv = document.createElement("div");
+        actionsDiv.className = "record-actions";
+ 
+        var deleteButton = document.createElement("button");
+        deleteButton.textContent = "حذف";
+        deleteButton.className = "delete-btn";
+        deleteButton.addEventListener("click", function () {
+            if (editingRecordDiv === recordDiv) {
+                exitEditMode();
+            }
+            recordDiv.remove();
+        });
+ 
+        var editButton = document.createElement("button");
+        editButton.textContent = "تعديل";
+        editButton.className = "edit-btn";
+        editButton.addEventListener("click", function () {
+            enterEditMode(recordDiv);
+        });
+ 
+        // ترتيب الحذف ثم التعديل بالـ DOM يخلي زر التعديل يطلع على اليسار (الصفحة RTL)
+        actionsDiv.appendChild(deleteButton);
+        actionsDiv.appendChild(editButton);
+ 
+        recordDiv.appendChild(infoText);
+        recordDiv.appendChild(actionsDiv);
+ 
+        document.getElementById("recordsList").appendChild(recordDiv);
+    }
+ 
+    function enterEditMode(recordDiv) {
+        var infoSpan = recordDiv.querySelector("span");
+        var parts = infoSpan.textContent.split(" - ");
+ 
+        document.getElementById("name").value = parts[0] || "";
+        document.getElementById("email").value = parts[1] || "";
+        document.getElementById("age").value = parts[2] || "";
+ 
+        editingRecordDiv = recordDiv;
+ 
+        document.getElementById("addButton").textContent = "حفظ التعديل";
+        document.getElementById("cancelButton").style.display = "block";
+        document.getElementById("errorMessage").textContent = "";
+    }
+ 
+    function exitEditMode() {
+        editingRecordDiv = null;
+        document.getElementById("addButton").textContent = "إضافة";
+        document.getElementById("cancelButton").style.display = "none";
+    }
 </script>
+ 
+</body>
+</html>
