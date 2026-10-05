@@ -1,3 +1,18 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سجل المستخدم</title>
+<style>
+    body {
+        font-family: Tahoma, Arial, sans-serif;
+        background-color: #f2f2f2;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+    }
 .container {
     background-color: #ffffff;
     padding: 25px;
@@ -124,9 +139,12 @@ button#cancelButton:hover {
         <p id="errorMessage" class="error"></p>
 
         <button type="button" id="addButton">إضافة</button>
+        <button type="button" id="cancelButton">إلغاء</button>
     </form>
 
     <h3>السجلات المضافة</h3>
+    <label for="searchInput">بحث بالاسم</label>
+    <input type="text" id="searchInput" placeholder="اكتب اسم للبحث عنه">
     <div id="recordsList"></div>
 </div>
 
@@ -197,7 +215,6 @@ document.getElementById("cancelButton").addEventListener("click", function () {
             enterEditMode(recordDiv);
         });
  
-        // ترتيب الحذف ثم التعديل بالـ DOM يخلي زر التعديل يطلع على اليسار (الصفحة RTL)
         actionsDiv.appendChild(deleteButton);
         actionsDiv.appendChild(editButton);
  
@@ -227,6 +244,22 @@ document.getElementById("cancelButton").addEventListener("click", function () {
         document.getElementById("addButton").textContent = "إضافة";
         document.getElementById("cancelButton").style.display = "none";
     }
+document.getElementById("searchInput").addEventListener("input", function () {
+        var searchTerm = this.value.trim().toLowerCase();
+        var allRecords = document.querySelectorAll("#recordsList .record");
+ 
+        allRecords.forEach(function (recordDiv) {
+            var infoSpan = recordDiv.querySelector("span");
+            var name = infoSpan.textContent.split(" - ")[0] || "";
+ 
+            if (name.toLowerCase().indexOf(searchTerm) !== -1) {
+                recordDiv.style.display = "flex";
+            } else {
+                recordDiv.style.display = "none";
+            }
+        });
+    });
+
 </script>
  
 </body>
