@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سجل المستخدم</title>
+<style>
+    body {
+        font-family: Tahoma, Arial, sans-serif;
+        background-color: #f2f2f2;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+    }
+.container {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 350px;
+}
+
+h2, h3 {
+    text-align: center;
+    color: #333;
+}
+
+label {
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.error {
+    color: red;
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+button#addButton {
+    margin-top: 15px;
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button#addButton:hover {
+    background-color: #45a049;
+}
+
+button#cancelButton {
+    margin-top: 8px;
+    width: 100%;
+    padding: 10px;
+    background-color: #9e9e9e;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: none;
+}
+
+button#cancelButton:hover {
+    background-color: #828282;
+}
+
+.record {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.record-actions {
+    display: flex;
+}
+
+.record-actions button {
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+}
+
+.record-actions .delete-btn {
+    background-color: #e74c3c;
+    margin-left: 6px;
+}
+
+.record-actions .delete-btn:hover {
+    background-color: #c0392b;
+}
+
+.record-actions .edit-btn {
+    background-color: #f1c40f;
+    color: #333;
+}
+
+.record-actions .edit-btn:hover {
+    background-color: #d4ac0d;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>إضافة سجل جديد</h2>
+
+    <form id="recordForm">
+        <label for="name">الاسم</label>
+        <input type="text" id="name" placeholder="اكتب الاسم">
+
+        <label for="email">البريد الإلكتروني</label>
+        <input type="text" id="email" placeholder="اكتب البريد الإلكتروني">
+
+        <label for="age">العمر</label>
+        <input type="text" id="age" placeholder="اكتب العمر">
+
+        <p id="errorMessage" class="error"></p>
+
+        <button type="button" id="addButton">إضافة</button>
+        <button type="button" id="cancelButton">إلغاء</button>
+    </form>
+
+    <h3>السجلات المضافة</h3>
+    <label for="searchInput">بحث بالاسم</label>
+    <input type="text" id="searchInput" placeholder="اكتب اسم للبحث عنه">
+    <div id="recordsList"></div>
+</div>
+
+<script>
+    var editingRecordDiv = null;
+
+    document.getElementById("addButton").addEventListener("click", function () {
+        var name = document.getElementById("name").value;
+        var email = document.getElementById("email").value;
+        var age = document.getElementById("age").value;
+        var errorMessage = document.getElementById("errorMessage");
+
+        if (name === "" || email === "" || age === "") {
+            errorMessage.textContent = "الرجاء تعبئة جميع الحقول";
+            return;
+        }
+
+        if (isNaN(age)) {
+            errorMessage.textContent = "العمر يجب أن يكون رقم";
+            return;
+        }
+
+        errorMessage.textContent = "";
+  if (editingRecordDiv !== null) {
+  var infoSpan = editingRecordDiv.querySelector("span");
+            infoSpan.textContent = name + " - " + email + " - " + age;
+
+  exitEditMode();
+        } else {
+            createRecord(name, email, age);
+        }
+  document.getElementById("name").value = "";
+        document.getElementById("email").value = "";
+        document.getElementById("age").value = "";
+    });
+document.getElementById("cancelButton").addEventListener("click", function () {
+        exitEditMode();
+        document.getElementById("name").value = "";
+        document.getElementById("email").value = "";
+        document.getElementById("age").value = "";
+        document.getElementById("errorMessage").textContent = "";
+    });
+ 
+    function createRecord(name, email, age) {
+        var recordDiv = document.createElement("div");
+        recordDiv.className = "record";
+ 
+        var infoText = document.createElement("span");
+        infoText.textContent = name + " - " + email + " - " + age;
+ 
+        var actionsDiv = document.createElement("div");
+        actionsDiv.className = "record-actions";
+ 
+        var deleteButton = document.createElement("button");
+        deleteButton.textContent = "حذف";
+        deleteButton.className = "delete-btn";
+        deleteButton.addEventListener("click", function () {
+            if (editingRecordDiv === recordDiv) {
+                exitEditMode();
+            }
+            recordDiv.remove();
+        });
+ 
+        var editButton = document.createElement("button");
+        editButton.textContent = "تعديل";
+        editButton.className = "edit-btn";
+        editButton.addEventListener("click", function () {
+            enterEditMode(recordDiv);
+        });
+ 
+        actionsDiv.appendChild(deleteButton);
+        actionsDiv.appendChild(editButton);
+ 
+        recordDiv.appendChild(infoText);
+        recordDiv.appendChild(actionsDiv);
+ 
+        document.getElementById("recordsList").appendChild(recordDiv);
+    }
+ 
+    function enterEditMode(recordDiv) {
+        var infoSpan = recordDiv.querySelector("span");
+        var parts = infoSpan.textContent.split(" - ");
+ 
+        document.getElementById("name").value = parts[0] || "";
+        document.getElementById("email").value = parts[1] || "";
+        document.getElementById("age").value = parts[2] || "";
+ 
+        editingRecordDiv = recordDiv;
+ 
+        document.getElementById("addButton").textContent = "حفظ التعديل";
+        document.getElementById("cancelButton").style.display = "block";
+        document.getElementById("errorMessage").textContent = "";
+    }
+ 
+    function exitEditMode() {
+        editingRecordDiv = null;
+        document.getElementById("addButton").textContent = "إضافة";
+        document.getElementById("cancelButton").style.display = "none";
+    }
+document.getElementById("searchInput").addEventListener("input", function () {
+        var searchTerm = this.value.trim().toLowerCase();
+        var allRecords = document.querySelectorAll("#recordsList .record");
+ 
+        allRecords.forEach(function (recordDiv) {
+            var infoSpan = recordDiv.querySelector("span");
+            var name = infoSpan.textContent.split(" - ")[0] || "";
+ 
+            if (name.toLowerCase().indexOf(searchTerm) !== -1) {
+                recordDiv.style.display = "flex";
+            } else {
+                recordDiv.style.display = "none";
+            }
+        });
+    });
+
+</script>
+ 
+</body>
+</html>
